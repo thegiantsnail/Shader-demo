@@ -42,6 +42,7 @@ const ShaderPlane: React.FC<ShaderPlaneProps> = ({
   isPlaying,
   timeScale,
   onCompileError,
+  onFpsUpdate,
   onReady,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);

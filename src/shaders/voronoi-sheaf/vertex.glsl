@@ -1,8 +1,3 @@
-// Uniforms
-// uniform float uTime;
-// uniform vec2 uResolution;
-// uniform vec2 uMouse;
-
 varying vec2 vUv;
 
 void main() {

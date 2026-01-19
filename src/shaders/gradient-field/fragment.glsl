@@ -1,10 +1,12 @@
+precision highp float;
+
 // Uniforms
-// uniform float uTime;
-// uniform vec2 uResolution;
-// uniform float uFlowSpeed;
-// uniform float uColorVariance;
-// uniform float uNoiseAmplitude;
-// uniform float uBanding;
+uniform float uTime;
+uniform vec2 uResolution;
+uniform float uFlowSpeed;
+uniform float uColorVariance;
+uniform float uNoiseAmplitude;
+uniform float uBanding;
 
 varying vec2 vUv;
 
