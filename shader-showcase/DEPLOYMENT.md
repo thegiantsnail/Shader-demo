@@ -9,16 +9,16 @@
 
 ### Step 1: Update Configuration
 
-Replace `yourname` in the following files with your GitHub username:
+Replace `thegiantsnail` in the following files with your GitHub username:
 
 **vite.config.ts:**
 ```ts
-base: '/shader-showcase/', // Or your actual repo name
+base: '/Shader-demo/', // Or your actual repo name
 ```
 
 **README.md:**
 ```md
-👉 [View Live Demo](https://YOUR-USERNAME.github.io/shader-showcase)
+👉 [View Live Demo](https://thegiantsnail.github.io/Shader-demo)
 ```
 
 ### Step 2: Create GitHub Repository
@@ -28,10 +28,10 @@ base: '/shader-showcase/', // Or your actual repo name
 git init
 
 # Create repository on GitHub (via web interface or gh cli)
-# Name it: shader-showcase
+# Name it: Shader-demo
 
 # Add remote
-git remote add origin https://github.com/YOUR-USERNAME/shader-showcase.git
+git remote add origin https://github.com/thegiantsnail/Shader-demo.git
 ```
 
 ### Step 3: Push to GitHub
@@ -57,7 +57,7 @@ pnpm deploy
 This will:
 1. Build the project
 2. Deploy to `gh-pages` branch
-3. Your site will be live at: `https://YOUR-USERNAME.github.io/shader-showcase`
+3. Your site will be live at: `https://thegiantsnail.github.io/Shader-demo`
 
 #### Method B: Automatic Deploy (Recommended)
 
@@ -74,7 +74,7 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) will:
 
 ### Step 5: Verify Deployment
 
-Visit: `https://YOUR-USERNAME.github.io/shader-showcase`
+Visit: `https://thegiantsnail.github.io/Shader-demo`
 
 You should see:
 - ✅ All 7 shader demos
@@ -88,7 +88,7 @@ You should see:
 
 **Check base path in vite.config.ts:**
 ```ts
-base: '/shader-showcase/', // Must match repo name exactly
+base: '/Shader-demo/', // Must match repo name exactly
 ```
 
 **If your repo is named differently:**
@@ -291,7 +291,7 @@ Use browser DevTools device emulation for quick testing.
    ```
 3. Configure DNS:
    - Add A records to GitHub's IPs
-   - Or CNAME to `YOUR-USERNAME.github.io`
+   - Or CNAME to `thegiantsnail.github.io`
 4. Enable HTTPS in GitHub settings
 
 ### Vercel

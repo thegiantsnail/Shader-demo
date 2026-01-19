@@ -4,7 +4,7 @@ An interactive gallery of WebGL shader demonstrations built with React Three Fib
 
 ## ✨ Live Demo
 
-👉 [View Live Demo](https://yourname.github.io/shader-showcase)
+👉 [View Live Demo](https://thegiantsnail.github.io/Shader-demo)
 
 ## 🎨 Featured Shaders
 
@@ -44,8 +44,8 @@ Hypnotic interference patterns created by overlapping frequencies, demonstrating
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourname/shader-showcase.git
-cd shader-showcase
+git clone https://github.com/thegiantsnail/Shader-demo.git
+cd Shader-demo
 
 # Install dependencies
 pnpm install
