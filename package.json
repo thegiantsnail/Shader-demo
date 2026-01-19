@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://yourname.github.io/Shader-demo",
+  "homepage": "https://thegiantsnail.github.io/Shader-demo",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
