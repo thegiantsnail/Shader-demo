@@ -179,7 +179,7 @@ The project is now:
 
 ## 📈 Next Steps (Optional)
 
-1. Replace "yourname" in README with actual GitHub username
+1. Replace "thegiantsnail" in README with actual GitHub username
 2. Update `base` in vite.config.ts if repo name differs
 3. Push to GitHub
 4. Enable GitHub Pages in repository settings
