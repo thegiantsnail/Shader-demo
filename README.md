@@ -4,7 +4,7 @@ A focused WebGL shader gallery showcasing interactive, parameter-driven procedur
 
 ## Live Demo
 
-https://yourname.github.io/Shader-demo
+https://thegiantsnail.github.io/Shader-demo
 
 ## Local Development
 
