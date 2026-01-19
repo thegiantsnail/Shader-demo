@@ -4,12 +4,13 @@ import Header from './components/Header';
 import SheafCanvas from './components/SheafCanvas';
 import ControlPanel from './components/ControlPanel';
 import { INITIAL_PARAMS, MODE_PRESETS } from './constants';
-import { SheafParams, AestheticMode } from './types';
+import { SheafParams, AestheticMode, RenderMode } from './types';
 import { GoogleGenAI } from "@google/genai";
 
 const App: React.FC = () => {
   const [params, setParams] = useState<SheafParams>(INITIAL_PARAMS);
   const [mode, setMode] = useState<AestheticMode>(AestheticMode.ORGANIC);
+  const [renderMode, setRenderMode] = useState<RenderMode>(RenderMode.INTERIOR_COLOR);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiInsight, setAiInsight] = useState<string>("Initializing the particulate sheaf...");
@@ -50,7 +51,7 @@ const App: React.FC = () => {
       <main className="absolute inset-0 flex">
         {/* Main Visual Viewport */}
         <div className="flex-grow h-full relative">
-          <SheafCanvas params={params} mode={mode} />
+          <SheafCanvas params={params} mode={mode} renderMode={renderMode} />
           
           {/* AI Insight Overlay */}
           <div className="absolute bottom-8 left-8 right-8 md:right-auto md:w-96 p-4 bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl transition-all duration-500 hover:bg-black/60">
@@ -73,7 +74,9 @@ const App: React.FC = () => {
               params={params} 
               onParamChange={updateParam} 
               mode={mode} 
-              onModeChange={handleModeChange} 
+              onModeChange={handleModeChange}
+              renderMode={renderMode}
+              onRenderModeChange={setRenderMode}
             />
             
             <button 

@@ -1,15 +1,24 @@
 
 import React from 'react';
-import { SheafParams, AestheticMode } from '../types';
+import { SheafParams, AestheticMode, RenderMode } from '../types';
 
 interface ControlPanelProps {
   params: SheafParams;
   onParamChange: (key: keyof SheafParams, value: number) => void;
   mode: AestheticMode;
   onModeChange: (mode: AestheticMode) => void;
+  renderMode: RenderMode;
+  onRenderModeChange: (mode: RenderMode) => void;
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ params, onParamChange, mode, onModeChange }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({
+  params,
+  onParamChange,
+  mode,
+  onModeChange,
+  renderMode,
+  onRenderModeChange
+}) => {
   const Slider = ({ label, icon, val, min, max, step, onChange }: any) => (
     <div className="mb-6">
       <div className="flex justify-between items-center mb-2">
@@ -49,6 +58,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ params, onParamChange, mode
               }`}
             >
               {m}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+          <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
+          Render Variant
+        </h2>
+        <div className="grid grid-cols-1 gap-2">
+          {Object.values(RenderMode).map((variant) => (
+            <button
+              key={variant}
+              onClick={() => onRenderModeChange(variant)}
+              className={`px-3 py-2 text-[10px] rounded border transition-all duration-300 ${
+                renderMode === variant
+                  ? 'bg-blue-600/20 border-blue-500 text-white shadow-[0_0_10px_rgba(37,99,235,0.2)]'
+                  : 'bg-transparent border-white/5 text-slate-500 hover:border-white/20'
+              }`}
+            >
+              {variant}
             </button>
           ))}
         </div>
@@ -98,6 +129,38 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ params, onParamChange, mode
           val={params.colorShift} 
           min={0} max={1} step={0.01} 
           onChange={(v: number) => onParamChange('colorShift', v)} 
+        />
+
+        <Slider 
+          label="Interior Radius" 
+          icon="fa-dot-circle"
+          val={params.interiorRadius} 
+          min={0.1} max={1.2} step={0.01} 
+          onChange={(v: number) => onParamChange('interiorRadius', v)} 
+        />
+
+        <Slider 
+          label="Interior Noise" 
+          icon="fa-wave-square"
+          val={params.noiseStrength} 
+          min={0} max={1} step={0.01} 
+          onChange={(v: number) => onParamChange('noiseStrength', v)} 
+        />
+
+        <Slider 
+          label="Flow Speed" 
+          icon="fa-water"
+          val={params.flowSpeed} 
+          min={0} max={1} step={0.01} 
+          onChange={(v: number) => onParamChange('flowSpeed', v)} 
+        />
+
+        <Slider 
+          label="Color Variance" 
+          icon="fa-swatchbook"
+          val={params.colorVariance} 
+          min={0} max={1} step={0.01} 
+          onChange={(v: number) => onParamChange('colorVariance', v)} 
         />
 
         <Slider 
