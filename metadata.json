@@ -1,0 +1,5 @@
+{
+  "name": "Sheafed Particulate Engine",
+  "description": "A high-performance hierarchical rendering system that subdivides the screen into multiscale color-carrying sheaves, creating a 'Particulate Impressionism' aesthetic.",
+  "requestFramePermissions": []
+}
