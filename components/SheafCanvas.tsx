@@ -2,11 +2,12 @@
 import React, { useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { SheafParams, AestheticMode } from '../types';
+import { SheafParams, AestheticMode, RenderMode } from '../types';
 
 interface SheafCanvasProps {
   params: SheafParams;
   mode: AestheticMode;
+  renderMode: RenderMode;
 }
 
 const vertexShader = `
@@ -26,9 +27,14 @@ const fragmentShader = `
   uniform float uParticleSize;
   uniform float uFluidity;
   uniform float uColorShift;
+  uniform float uInteriorRadius;
+  uniform float uNoiseStrength;
+  uniform float uFlowSpeed;
+  uniform float uColorVariance;
   uniform float uDepth;
   uniform float uGlow;
   uniform int uMode; // 0: Crystalline, 1: Organic, 2: Topological, 3: Impressionist
+  uniform int uRenderMode; // 0: Edge Bloom, 1: Interior Color
 
   varying vec2 vUv;
 
@@ -37,6 +43,33 @@ const fragmentShader = `
     p3 = fract(p3 * vec3(.1031, .1030, .0973));
     p3 += dot(p3, p3.yxz + 33.33);
     return fract((p3.xxy + p3.yxx) * p3.zyx);
+  }
+
+  float hash21(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+
+  float noise2d(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
+  vec2 curlNoise(vec2 p) {
+    float e = 0.1;
+    float n1 = noise2d(p + vec2(0.0, e));
+    float n2 = noise2d(p - vec2(0.0, e));
+    float n3 = noise2d(p + vec2(e, 0.0));
+    float n4 = noise2d(p - vec2(e, 0.0));
+    vec2 curl = vec2(n1 - n2, n4 - n3);
+    return curl;
   }
 
   // Improved Voronoi returns: x=dist to edge, yz=relative vector to center
@@ -101,10 +134,13 @@ const fragmentShader = `
       float distToEdge = v.x; // 0 at edge, higher at center
       vec2 relPos = v.yz;    // relative vector from current point to cell center
 
-      // MODEL 1: Cell-as-Gradient-Basin
-      // High interior weight at center (distToEdge is large), high edge weight at border
-      float interiorWeight = smoothstep(0.0, 0.3, distToEdge);
+      float distToCenter = length(relPos);
+      float interiorWeight = smoothstep(uInteriorRadius, 0.0, distToCenter);
       float edgeWeight = 1.0 - interiorWeight;
+      if (uRenderMode == 0) {
+        interiorWeight = 0.0;
+        edgeWeight = 1.0;
+      }
 
       // MODEL 2: Cell-as-Micro-Texture (Internal Grain)
       float cellLocalAngle = atan(relPos.y, relPos.x);
@@ -122,6 +158,7 @@ const fragmentShader = `
       if (i == 0) colData = mix(colorA, colorB, 0.3);
       else if (i == 1) colData = mix(colorB, colorC, 0.5);
       else colData = colorC;
+      vec3 variedColor = mix(colData, hash33(cellSeed + vec3(9.1, 2.4, 5.7)), uColorVariance);
 
       // Particulate Refinement
       float particleMask = smoothstep(uParticleSize + 0.1, uParticleSize, 1.0 - distToEdge);
@@ -142,10 +179,14 @@ const fragmentShader = `
         particleMask = smoothstep(uParticleSize * 3.0, 0.0, 1.0 - distToEdge);
       }
 
-      // Synthesis of the Sheaf Layer
-      // Filling the interior with the basin color + adding edge glow
+      vec2 flow = curlNoise(p * (0.4 + uComplexity) + uTime * uFlowSpeed);
+      float interiorNoise = noise2d(relPos * (3.0 + uComplexity * 6.0) + flow * 2.0 + uTime * 0.5);
+      float textureBoost = 1.0 + (interiorNoise - 0.5) * 2.0 * uNoiseStrength;
+      float gradientMix = smoothstep(0.0, uInteriorRadius, distToCenter);
+      vec3 interiorColor = variedColor * mix(1.2, 0.6, gradientMix) * textureBoost;
+
       float layerGlow = exp(-(1.0 - distToEdge) * (4.0 / uGlow)) * uGlow;
-      vec3 layerColor = colData * (interiorWeight + layerGlow * edgeWeight);
+      vec3 layerColor = interiorColor * interiorWeight + variedColor * layerGlow * edgeWeight;
       
       // Apply the particulate mask to "chunk" the effect
       layerColor *= (0.3 + particleMask * 0.7);
@@ -169,7 +210,7 @@ const fragmentShader = `
   }
 `;
 
-const SheafPlane: React.FC<SheafCanvasProps> = ({ params, mode }) => {
+const SheafPlane: React.FC<SheafCanvasProps> = ({ params, mode, renderMode }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { size } = useThree();
 
@@ -182,9 +223,14 @@ const SheafPlane: React.FC<SheafCanvasProps> = ({ params, mode }) => {
     uParticleSize: { value: params.particleSize },
     uFluidity: { value: params.fluidity },
     uColorShift: { value: params.colorShift },
+    uInteriorRadius: { value: params.interiorRadius },
+    uNoiseStrength: { value: params.noiseStrength },
+    uFlowSpeed: { value: params.flowSpeed },
+    uColorVariance: { value: params.colorVariance },
     uDepth: { value: params.depth },
     uGlow: { value: params.glow },
-    uMode: { value: 1 }
+    uMode: { value: 1 },
+    uRenderMode: { value: 1 }
   }), []);
 
   // Sync uniforms
@@ -194,6 +240,10 @@ const SheafPlane: React.FC<SheafCanvasProps> = ({ params, mode }) => {
     uniforms.uParticleSize.value = params.particleSize;
     uniforms.uFluidity.value = params.fluidity;
     uniforms.uColorShift.value = params.colorShift;
+    uniforms.uInteriorRadius.value = params.interiorRadius;
+    uniforms.uNoiseStrength.value = params.noiseStrength;
+    uniforms.uFlowSpeed.value = params.flowSpeed;
+    uniforms.uColorVariance.value = params.colorVariance;
     uniforms.uDepth.value = params.depth;
     uniforms.uGlow.value = params.glow;
     
@@ -203,7 +253,8 @@ const SheafPlane: React.FC<SheafCanvasProps> = ({ params, mode }) => {
     if (mode === AestheticMode.TOPOLOGICAL) modeVal = 2;
     if (mode === AestheticMode.IMPRESSIONIST) modeVal = 3;
     uniforms.uMode.value = modeVal;
-  }, [params, mode, uniforms]);
+    uniforms.uRenderMode.value = renderMode === RenderMode.EDGE_BLOOM ? 0 : 1;
+  }, [params, mode, renderMode, uniforms]);
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -229,11 +280,11 @@ const SheafPlane: React.FC<SheafCanvasProps> = ({ params, mode }) => {
   );
 };
 
-const SheafCanvas: React.FC<SheafCanvasProps> = ({ params, mode }) => {
+const SheafCanvas: React.FC<SheafCanvasProps> = ({ params, mode, renderMode }) => {
   return (
     <div className="w-full h-full bg-black">
       <Canvas camera={{ position: [0, 0, 1] }} dpr={[1, 2]}>
-        <SheafPlane params={params} mode={mode} />
+        <SheafPlane params={params} mode={mode} renderMode={renderMode} />
       </Canvas>
     </div>
   );
