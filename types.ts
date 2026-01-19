@@ -1,26 +1,28 @@
+export type UniformValue = number;
 
-export interface SheafParams {
-  subdivision: number;
-  complexity: number;
-  particleSize: number;
-  fluidity: number;
-  colorShift: number;
-  interiorRadius: number;
-  noiseStrength: number;
-  flowSpeed: number;
-  colorVariance: number;
-  depth: number;
-  glow: number;
+export interface ShaderUniformConfig {
+  key: string;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  default: UniformValue;
 }
 
-export enum AestheticMode {
-  CRYSTALLINE = 'Crystalline',
-  ORGANIC = 'Organic',
-  TOPOLOGICAL = 'Topological',
-  IMPRESSIONIST = 'Impressionist'
+export interface ShaderPreset {
+  id: string;
+  name: string;
+  values: Record<string, UniformValue>;
 }
 
-export enum RenderMode {
-  EDGE_BLOOM = 'Edge Bloom Only',
-  INTERIOR_COLOR = 'Full Interior Color'
+export interface ShaderDefinition {
+  id: string;
+  name: string;
+  description: string;
+  vertexShader: string;
+  fragmentShader: string;
+  uniforms: ShaderUniformConfig[];
+  presets: ShaderPreset[];
 }
+
+export type ShaderUniformValues = Record<string, UniformValue>;

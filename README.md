@@ -1,20 +1,28 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Shader Gallery Demo
 
-# Run and deploy your AI Studio app
+A focused WebGL shader gallery showcasing interactive, parameter-driven procedural visuals built with React, Three.js, and react-three-fiber.
 
-This contains everything you need to run your app locally.
+## Live Demo
 
-View your app in AI Studio: https://ai.studio/apps/drive/1v6nja8a8Ns7KauwtxdJ9RIdEOeaVgSfj
+https://yourname.github.io/Shader-demo
 
-## Run Locally
+## Local Development
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev
+```
 
+## Shader Collection
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- **Voronoi Sheaf** — layered Voronoi cells with glow and cursor turbulence.
+- **Particulate Surface** — granular sheets with ripple-driven topology cues.
+- **Gradient Field** — flowing gradients with banded energy and harmonic drift.
+
+## Deployment
+
+This project ships with a GitHub Pages deploy script.
+
+```bash
+npm run deploy
+```
