@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Leva, useControls } from 'leva';
 import Header from './components/Header';
 import ShaderCanvas, { ShaderCanvasHandle } from './components/ShaderCanvas';
@@ -14,6 +14,8 @@ const App: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [timeScale, setTimeScale] = useState(1);
   const [compileError, setCompileError] = useState<string | null>(null);
+  const [fps, setFps] = useState(60);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const canvasRef = useRef<ShaderCanvasHandle>(null);
 
   const activeShader = useMemo<ShaderDefinition>(() => {
@@ -60,6 +62,96 @@ const App: React.FC = () => {
     canvasRef.current?.capture();
   };
 
+  const handleRandomize = () => {
+    const randomUniforms: ShaderUniformValues = {};
+    activeShader.uniforms.forEach(uniform => {
+      const range = uniform.max - uniform.min;
+      const random = Math.random() * range + uniform.min;
+      randomUniforms[uniform.key] = random;
+    });
+    setUniformValues(randomUniforms);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const handleShareConfig = () => {
+    navigator.clipboard.writeText(window.location.href);
+  };
+
+  // Load from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const config = params.get('config');
+    if (config) {
+      try {
+        const { shader, params: urlParams } = JSON.parse(atob(config));
+        const shaderDef = SHADER_GALLERY.find(s => s.id === shader);
+        if (shaderDef) {
+          setActiveShaderId(shader);
+          setUniformValues(urlParams);
+        }
+      } catch (e) {
+        console.warn('Invalid config URL');
+      }
+    }
+  }, []);
+
+  // Update URL when state changes (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const state = { shader: activeShaderId, params: uniformValues };
+      const encoded = btoa(JSON.stringify(state));
+      const url = new URL(window.location.href);
+      url.searchParams.set('config', encoded);
+      window.history.replaceState({}, '', url.toString());
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [activeShaderId, uniformValues]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return;
+      
+      switch(e.key.toLowerCase()) {
+        case ' ':
+          e.preventDefault();
+          setIsPlaying(prev => !prev);
+          break;
+        case 'r':
+          handleResetUniforms();
+          break;
+        case 's':
+          handleExport();
+          break;
+        case 'f':
+          toggleFullscreen();
+          break;
+        case 'arrowright':
+          const currentIdx = SHADER_GALLERY.findIndex(s => s.id === activeShaderId);
+          const nextIdx = (currentIdx + 1) % SHADER_GALLERY.length;
+          handleShaderSelect(SHADER_GALLERY[nextIdx].id);
+          break;
+        case 'arrowleft':
+          const currIdx = SHADER_GALLERY.findIndex(s => s.id === activeShaderId);
+          const prevIdx = (currIdx - 1 + SHADER_GALLERY.length) % SHADER_GALLERY.length;
+          handleShaderSelect(SHADER_GALLERY[prevIdx].id);
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [activeShaderId]);
+
   const insightMode = isPlaying ? 'Live' : 'Paused';
   const insightText =
     insightMode === 'Live'
@@ -82,6 +174,8 @@ const App: React.FC = () => {
           onTimeScaleChange={setTimeScale}
           onResetUniforms={handleResetUniforms}
           onExport={handleExport}
+          onRandomize={handleRandomize}
+          onShareConfig={handleShareConfig}
           insightMode={insightMode}
           insightText={insightText}
         />
@@ -95,7 +189,38 @@ const App: React.FC = () => {
             isPlaying={isPlaying}
             timeScale={timeScale}
             onCompileError={setCompileError}
+            onFpsUpdate={setFps}
           />
+
+          {/* FPS Counter */}
+          <div className="absolute top-4 left-4 px-3 py-1 bg-black/70 backdrop-blur-md border border-white/10 rounded font-mono text-xs text-green-400">
+            {fps} FPS
+          </div>
+
+          {/* Control Buttons */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              onClick={handleExport}
+              className="w-10 h-10 bg-black/70 backdrop-blur-md border border-white/10 rounded hover:bg-white/10 transition-colors flex items-center justify-center"
+              title="Screenshot (S)"
+            >
+              <i className="fas fa-camera text-sm"></i>
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="w-10 h-10 bg-black/70 backdrop-blur-md border border-white/10 rounded hover:bg-white/10 transition-colors flex items-center justify-center"
+              title="Fullscreen (F)"
+            >
+              <i className={`fas fa-${isFullscreen ? 'compress' : 'expand'} text-sm`}></i>
+            </button>
+            <button
+              onClick={handleRandomize}
+              className="w-10 h-10 bg-black/70 backdrop-blur-md border border-white/10 rounded hover:bg-white/10 transition-colors flex items-center justify-center"
+              title="Randomize (Space)"
+            >
+              <i className="fas fa-random text-sm"></i>
+            </button>
+          </div>
 
           {compileError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80 p-6">

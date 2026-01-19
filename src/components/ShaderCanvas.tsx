@@ -28,6 +28,7 @@ interface ShaderCanvasProps {
   isPlaying: boolean;
   timeScale: number;
   onCompileError?: (error: string | null) => void;
+  onFpsUpdate?: (fps: number) => void;
 }
 
 interface ShaderPlaneProps extends ShaderCanvasProps {
@@ -44,7 +45,7 @@ const ShaderPlane: React.FC<ShaderPlaneProps> = ({
   onReady,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const { size, gl } = useThree();
+  const { size, gl, viewport } = useThree();
   const dpr = gl.getPixelRatio();
 
   const uniforms = useMemo(
@@ -68,6 +69,9 @@ const ShaderPlane: React.FC<ShaderPlaneProps> = ({
     updateResolution(uniforms, size.width * dpr, size.height * dpr);
   }, [size.width, size.height, dpr, uniforms]);
 
+  const [frameCount, setFrameCount] = useState(0);
+  const lastTimeRef = useRef(performance.now());
+
   useFrame((state, delta) => {
     if (!meshRef.current) {
       return;
@@ -80,11 +84,22 @@ const ShaderPlane: React.FC<ShaderPlaneProps> = ({
       new THREE.Vector2((state.mouse.x + 1) / 2, (state.mouse.y + 1) / 2),
       0.1
     );
+
+    // FPS monitoring
+    setFrameCount(prev => prev + 1);
+    const now = performance.now();
+    if (now - lastTimeRef.current >= 1000) {
+      if (onFpsUpdate) {
+        onFpsUpdate(Math.round((frameCount * 1000) / (now - lastTimeRef.current)));
+      }
+      setFrameCount(0);
+      lastTimeRef.current = now;
+    }
   });
 
   return (
     <mesh ref={meshRef}>
-      <planeGeometry args={[2, 2]} />
+      <planeGeometry args={[viewport.width, viewport.height]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -96,7 +111,7 @@ const ShaderPlane: React.FC<ShaderPlaneProps> = ({
 };
 
 const ShaderCanvas = forwardRef<ShaderCanvasHandle, ShaderCanvasProps>(
-  ({ vertexShader, fragmentShader, uniformValues, isPlaying, timeScale, onCompileError }, ref) => {
+  ({ vertexShader, fragmentShader, uniformValues, isPlaying, timeScale, onCompileError, onFpsUpdate }, ref) => {
     const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
 
     useImperativeHandle(ref, () => ({
@@ -109,9 +124,19 @@ const ShaderCanvas = forwardRef<ShaderCanvasHandle, ShaderCanvasProps>(
       },
     }));
 
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     return (
       <div className="w-full h-full bg-black">
-        <Canvas camera={{ position: [0, 0, 1] }} dpr={[1, 2]}>
+        <Canvas 
+          camera={{ position: [0, 0, 1] }} 
+          dpr={isMobile ? [1, 1.5] : [1, 2]}
+          gl={{
+            antialias: !isMobile,
+            alpha: false,
+            powerPreference: isMobile ? 'default' : 'high-performance'
+          }}
+        >
           <ShaderPlane
             vertexShader={vertexShader}
             fragmentShader={fragmentShader}
@@ -119,6 +144,7 @@ const ShaderCanvas = forwardRef<ShaderCanvasHandle, ShaderCanvasProps>(
             isPlaying={isPlaying}
             timeScale={timeScale}
             onCompileError={onCompileError}
+            onFpsUpdate={onFpsUpdate}
             onReady={(gl) => setRenderer(gl)}
           />
         </Canvas>

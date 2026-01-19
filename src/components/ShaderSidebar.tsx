@@ -13,6 +13,8 @@ interface ShaderSidebarProps {
   onTimeScaleChange: (value: number) => void;
   onResetUniforms: () => void;
   onExport: () => void;
+  onRandomize?: () => void;
+  onShareConfig?: () => void;
   insightMode: string;
   insightText: string;
 }
@@ -29,6 +31,8 @@ const ShaderSidebar: React.FC<ShaderSidebarProps> = ({
   onTimeScaleChange,
   onResetUniforms,
   onExport,
+  onRandomize,
+  onShareConfig,
   insightMode,
   insightText,
 }) => {
@@ -73,6 +77,25 @@ const ShaderSidebar: React.FC<ShaderSidebarProps> = ({
         <section>
           <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">Animation</h2>
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {onRandomize && (
+                <button
+                  onClick={onRandomize}
+                  className="py-2 rounded-md text-xs border border-purple-500/50 bg-purple-600/20 text-white hover:bg-purple-600/30 transition-colors"
+                  title="Space"
+                >
+                  🎲 Random
+                </button>
+              )}
+              {onShareConfig && (
+                <button
+                  onClick={onShareConfig}
+                  className="py-2 rounded-md text-xs border border-green-500/50 bg-green-600/20 text-white hover:bg-green-600/30 transition-colors"
+                >
+                  📋 Share
+                </button>
+              )}
+            </div>
             <button
               onClick={onTogglePlaying}
               className="w-full py-2 rounded-md text-sm font-medium bg-blue-600/30 border border-blue-500 text-white"
@@ -123,6 +146,15 @@ const ShaderSidebar: React.FC<ShaderSidebarProps> = ({
             </div>
             <p className="leading-relaxed text-slate-400">{insightText}</p>
           </div>
+        </section>
+
+        <section className="text-[9px] text-slate-500 space-y-1">
+          <p className="font-semibold text-slate-400 mb-2">Keyboard shortcuts:</p>
+          <p>Space: Play/Pause</p>
+          <p>S: Export PNG</p>
+          <p>R: Reset</p>
+          <p>F: Fullscreen</p>
+          <p>←/→: Switch shaders</p>
         </section>
       </div>
     </aside>
