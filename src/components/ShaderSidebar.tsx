@@ -13,6 +13,8 @@ interface ShaderSidebarProps {
   onTimeScaleChange: (value: number) => void;
   onResetUniforms: () => void;
   onExport: () => void;
+  insightMode: string;
+  insightText: string;
 }
 
 const ShaderSidebar: React.FC<ShaderSidebarProps> = ({
@@ -27,6 +29,8 @@ const ShaderSidebar: React.FC<ShaderSidebarProps> = ({
   onTimeScaleChange,
   onResetUniforms,
   onExport,
+  insightMode,
+  insightText,
 }) => {
   return (
     <aside className="w-full md:w-72 lg:w-80 border-r border-white/10 bg-black/70 backdrop-blur-md flex-shrink-0">
@@ -106,6 +110,18 @@ const ShaderSidebar: React.FC<ShaderSidebarProps> = ({
             >
               Export PNG
             </button>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">
+            AI Insight Overlay
+          </h2>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs text-slate-300 space-y-2">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-blue-400 font-semibold">
+              Mode: {insightMode}
+            </div>
+            <p className="leading-relaxed text-slate-400">{insightText}</p>
           </div>
         </section>
       </div>

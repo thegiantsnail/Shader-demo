@@ -60,6 +60,12 @@ const App: React.FC = () => {
     canvasRef.current?.capture();
   };
 
+  const insightMode = isPlaying ? 'Live' : 'Paused';
+  const insightText =
+    insightMode === 'Live'
+      ? 'Rendering with real-time uniforms and motion-driven sampling for the active shader.'
+      : 'Animation is paused. Adjust sliders or presets to study the static shader output.';
+
   return (
     <div className="w-full h-screen bg-black text-slate-200 flex flex-col">
       <Header />
@@ -76,6 +82,8 @@ const App: React.FC = () => {
           onTimeScaleChange={setTimeScale}
           onResetUniforms={handleResetUniforms}
           onExport={handleExport}
+          insightMode={insightMode}
+          insightText={insightText}
         />
 
         <main className="relative flex-1">
